@@ -44,40 +44,6 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
 
   return (
     <div className="print-only w-full max-w-[280mm] mx-auto text-black font-sans text-xs">
-      
-      {/* Header Section */}
-      <div className="flex justify-between items-start border-b-2 border-black pb-4 mb-4">
-        <div>
-          <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-900">Myeloma Treatment Schedule</h1>
-          <p className="text-sm font-bold text-slate-700 mt-1">Protocol: D-VTD (Daratumumab, Bortezomib, Thalidomide, Dexamethasone)</p>
-          <div className="mt-4 flex gap-8 text-sm">
-             <div>
-               <span className="text-slate-500 uppercase text-[10px] block">Cycle</span>
-               <span className="font-bold text-xl">{firstDay.cycle}</span>
-             </div>
-             <div>
-               <span className="text-slate-500 uppercase text-[10px] block">Start Date</span>
-               <span className="font-semibold">{firstDay.dateString}</span>
-             </div>
-             <div>
-               <span className="text-slate-500 uppercase text-[10px] block">Phase</span>
-               <span className="font-semibold">{firstDay.phase}</span>
-             </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 min-w-[300px]">
-           <div className="border-b border-slate-300 pb-1">
-             <span className="text-[10px] uppercase text-slate-500 mr-2">Patient Name:</span>
-           </div>
-           <div className="border-b border-slate-300 pb-1">
-             <span className="text-[10px] uppercase text-slate-500 mr-2">Hospital No:</span>
-           </div>
-           <div className="border-b border-slate-300 pb-1">
-             <span className="text-[10px] uppercase text-slate-500 mr-2">Consultant:</span>
-           </div>
-        </div>
-      </div>
 
       {/* Calendar Grid - page break when start date is not Monday to avoid broken cells */}
       <div
