@@ -1,19 +1,21 @@
+'use client'
+
 import React, { useState, useMemo, useRef } from 'react';
-import { generateSchedule } from './utils/scheduler';
-import { Phase, ScheduledDay } from './types';
-import CalendarView from './components/CalendarView';
-import ProtocolSidebar from './components/ProtocolSidebar';
-import DayModal from './components/DayModal';
-import PrintableView from './components/PrintableView';
+import { generateSchedule } from '../utils/scheduler';
+import { Phase, ScheduledDay } from '../types';
+import CalendarView from '../components/CalendarView';
+import ProtocolSidebar from '../components/ProtocolSidebar';
+import DayModal from '../components/DayModal';
+import PrintableView from '../components/PrintableView';
 import { Calendar, Printer, Settings, CalendarDays } from 'lucide-react';
 
-export default function App() {
+export default function Home() {
   // Initialize with today's date in local time to avoid UTC shifts
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
   });
-  
+
   const [phase, setPhase] = useState<Phase>(Phase.Induction);
   const [cycleNumber, setCycleNumber] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<ScheduledDay | null>(null);
@@ -30,9 +32,9 @@ export default function App() {
        // Create date at local midnight
        const date = new Date(y, m - 1, d);
        if (isNaN(date.getTime())) return 'Invalid Date';
-       return new Intl.DateTimeFormat('en-GB', { 
-         day: 'numeric', 
-         month: 'short', 
+       return new Intl.DateTimeFormat('en-GB', {
+         day: 'numeric',
+         month: 'short',
          year: 'numeric',
          weekday: 'short'
        }).format(date);
@@ -44,14 +46,14 @@ export default function App() {
   // Generate Schedule with timezone-safe start date
   const schedule = useMemo(() => {
     if (!startDate) return [];
-    
+
     try {
       const [y, m, d] = startDate.split('-').map(Number);
       // Vital: Use local constructor to prevent timezone off-by-one errors
       const start = new Date(y, m - 1, d);
-      
+
       if (isNaN(start.getTime())) return [];
-      
+
       return generateSchedule(start, cycleNumber);
     } catch (e) {
       return [];
@@ -86,7 +88,7 @@ export default function App() {
 
       {/* Main Screen Layout (Hidden when printing) */}
       <div className="no-print h-screen w-full flex flex-col md:flex-row overflow-hidden bg-slate-100">
-        
+
         {/* Sidebar (Protocol Info) */}
         {isSidebarOpen && (
           <div className="hidden md:block h-full shadow-xl z-20">
@@ -96,7 +98,7 @@ export default function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-          
+
           {/* Top Bar */}
           <header className="bg-white border-b border-slate-200 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm z-10 shrink-0">
             <div className="flex items-center gap-3">
@@ -110,7 +112,7 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-              
+
               {/* Date Picker - Improved Overlay Method */}
               <div className="relative group">
                 {/* Visual UI (Ignored by pointer events so clicks pass to input) */}
@@ -121,9 +123,9 @@ export default function App() {
                         <CalendarDays className="w-4 h-4 text-blue-600 shrink-0" />
                     </div>
                 </div>
-                
+
                 {/* The Input - Transparent overlay that catches ALL clicks */}
-                <input 
+                <input
                     ref={dateInputRef}
                     type="date"
                     value={startDate}
@@ -149,13 +151,13 @@ export default function App() {
               <div className="flex flex-col">
                 <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Phase</label>
                 <div className="flex bg-slate-200 rounded p-0.5">
-                   <button 
+                   <button
                     onClick={() => handlePhaseChange(Phase.Induction)}
                     className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Induction ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
                    >
                      Induction
                    </button>
-                   <button 
+                   <button
                     onClick={() => handlePhaseChange(Phase.Consolidation)}
                     className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Consolidation ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
                    >
@@ -170,7 +172,7 @@ export default function App() {
               <div className="flex flex-col">
                 <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Cycle</label>
                 <div className="relative">
-                     <select 
+                     <select
                        value={cycleNumber}
                        onChange={(e) => setCycleNumber(Number(e.target.value))}
                        className="appearance-none w-full bg-slate-50 border border-slate-200 hover:border-blue-400 transition-colors text-slate-700 text-xs font-bold py-1.5 pl-3 pr-8 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
@@ -187,14 +189,14 @@ export default function App() {
             </div>
 
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg md:block hidden border border-slate-200"
                 title="Toggle Protocol Info"
               >
                 <Settings className="w-5 h-5" />
               </button>
-              <button 
+              <button
                 onClick={handlePrint}
                 className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors shadow-sm font-medium text-sm"
               >
@@ -206,8 +208,8 @@ export default function App() {
 
           {/* Calendar Area */}
           <div className="flex-1 p-2 overflow-hidden flex flex-col">
-             <CalendarView 
-               schedule={schedule} 
+             <CalendarView
+               schedule={schedule}
                onDayClick={handleDayClick}
                currentDate={calendarDate}
              />
@@ -215,14 +217,14 @@ export default function App() {
 
           {/* Mobile Sidebar Toggle */}
           <div className="md:hidden absolute bottom-4 right-4 z-30">
-            <button 
+            <button
                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                className="bg-blue-600 text-white p-3 rounded-full shadow-lg"
             >
               <Settings className="w-6 h-6" />
             </button>
           </div>
-          
+
            {/* Mobile Sidebar Drawer */}
            {isSidebarOpen && (
              <div className="md:hidden fixed inset-0 z-40 flex">
@@ -238,9 +240,9 @@ export default function App() {
 
       {/* Modals */}
       <div className="no-print">
-        <DayModal 
-          day={selectedDay} 
-          onClose={() => setSelectedDay(null)} 
+        <DayModal
+          day={selectedDay}
+          onClose={() => setSelectedDay(null)}
         />
       </div>
     </>
