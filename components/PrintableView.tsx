@@ -76,7 +76,7 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
       </div>
 
       {/* Calendar Grid */}
-      <div className="border border-slate-300 rounded-sm overflow-hidden mb-6">
+      <div className="border border-slate-300 rounded-sm mb-6">
         {/* Days Header */}
         <div className="grid grid-cols-7 bg-slate-100 border-b border-slate-300">
           {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
