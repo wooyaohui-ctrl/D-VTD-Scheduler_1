@@ -65,7 +65,7 @@ const ProtocolSidebar: React.FC = () => {
             <div className="p-2 bg-red-50 rounded border border-red-100">
               <p className="font-semibold text-red-800">Neuropathy (Bortezomib)</p>
               <p>G1 with pain/G2: Reduce to 1.0 mg/m²</p>
-              <p>G2 with pain/G3: Withhold -> 0.7 mg/m²</p>
+              <p>G2 with pain/G3: Withhold -&gt; 0.7 mg/m²</p>
             </div>
             <div className="p-2 bg-blue-50 rounded border border-blue-100">
               <p className="font-semibold text-blue-800">Renal Impairment</p>
