@@ -1,0 +1,5 @@
+{
+  "name": "D-VTD Scheduler",
+  "description": "Clinical scheduling tool for Daratumumab, Bortezomib, Thalidomide, and Dexamethasone regimen.",
+  "requestFramePermissions": []
+}
