@@ -55,6 +55,12 @@
         html body #root .no-print {
           display: none !important;
         }
+
+        /* Ensure weeks don't break across pages */
+        .break-inside-avoid {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
       }
 
       /* Default screen state */
