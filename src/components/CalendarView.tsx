@@ -9,7 +9,7 @@ interface CalendarViewProps {
   currentDate: Date;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, currentDate: initialDate }) => {
+const CalendarView: React.FC<CalendarViewProps> = React.memo(({ schedule, onDayClick, currentDate: initialDate }) => {
   const [viewDate, setViewDate] = useState(initialDate);
 
   useEffect(() => {
@@ -156,6 +156,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
       </div>
     </div>
   );
-};
+});
 
 export default CalendarView;
