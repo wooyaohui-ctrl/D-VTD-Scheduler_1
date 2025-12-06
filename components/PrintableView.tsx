@@ -88,7 +88,7 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
 
         {/* Weeks */}
         {weeks.map((week, wIdx) => (
-          <div key={wIdx} className="grid grid-cols-7 border-b border-slate-300 last:border-b-0">
+          <div key={wIdx} className="grid grid-cols-7 border-b border-slate-300 last:border-b-0 print-week-row">
             {week.map((date, dIdx) => {
               const dayData = getDayData(date);
               const isToday = dayData !== undefined;
