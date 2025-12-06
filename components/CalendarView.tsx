@@ -39,7 +39,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
       <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-indigo-600" />
+            <CalendarIcon className="w-5 h-5 text-purple-600" />
             {formatMonthYear(viewDate)}
           </h2>
         </div>
@@ -68,28 +68,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
           const dayData = getDayData(date);
           const isCurrentMonth = date.getMonth() === viewDate.getMonth();
           const isToday = isSameDay(date, new Date());
-          
+
           const isStartOfCycle = dayData?.dayOfCycle === 1;
           const hasClinicVisit = dayData?.hasClinicVisit;
-          const hasDara = dayData?.drugs.some(d => d.name === 'Daratumumab');
-          const hasBort = dayData?.drugs.some(d => d.name === 'Bortezomib');
-          const hasHomeMeds = dayData?.drugs.some(d => d.route === 'PO');
+          const hasIsa = dayData?.drugs.some(d => d.name === 'Isatuximab');
+          const hasPom = dayData?.drugs.some(d => d.name === 'Pomalidomide');
+          const hasHomeMeds = dayData?.drugs.some(d => d.route === 'PO' && !d.isPreMed);
+          const isRestDay = dayData && dayData.dayOfCycle >= 22 && !hasIsa;
 
           return (
-            <div 
+            <div
               key={idx}
               onClick={() => dayData && onDayClick(dayData)}
               className={`
                 min-h-[110px] p-1.5 transition-colors relative group flex flex-col gap-1
                 ${!isCurrentMonth ? 'bg-slate-50 text-slate-400' : 'bg-white text-slate-700'}
-                ${dayData ? 'cursor-pointer hover:bg-indigo-50/50' : 'cursor-default'}
+                ${dayData ? 'cursor-pointer hover:bg-purple-50/50' : 'cursor-default'}
               `}
             >
               {/* Date & Cycle Number */}
               <div className="flex justify-between items-start mb-1">
                 <span className={`
                   text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full
-                  ${isToday ? 'bg-indigo-600 text-white shadow-md' : ''}
+                  ${isToday ? 'bg-purple-600 text-white shadow-md' : ''}
                 `}>
                   {date.getDate()}
                 </span>
@@ -100,13 +101,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
 
               {dayData && (
                 <div className="flex-1 flex flex-col gap-1.5">
-                  
+
                   {isStartOfCycle && (
-                    <div className="text-[9px] font-bold text-white bg-indigo-500 px-1.5 py-0.5 rounded shadow-sm w-full text-center">
+                    <div className="text-[9px] font-bold text-white bg-purple-500 px-1.5 py-0.5 rounded shadow-sm w-full text-center">
                       Start Cycle {dayData.cycle}
                     </div>
                   )}
-                  
+
                   {/* Clinic Card */}
                   {hasClinicVisit && (
                     <div className="bg-blue-50 border border-blue-200 rounded-md p-1 shadow-sm group-hover:border-blue-300 transition-colors">
@@ -117,16 +118,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
                          <span>Hospital</span>
                       </div>
                       <div className="flex flex-col gap-1">
-                        {hasDara && (
+                        {hasIsa && (
                           <div className="flex items-center gap-1.5 text-[9px] font-bold text-purple-800 bg-white px-1 py-0.5 rounded border border-purple-100 shadow-sm">
                             <Droplet className="w-3 h-3 text-purple-600 shrink-0" />
-                            <span>Dara</span>
-                          </div>
-                        )}
-                        {hasBort && (
-                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-sky-800 bg-white px-1 py-0.5 rounded border border-sky-100 shadow-sm">
-                            <Syringe className="w-3 h-3 text-sky-600 shrink-0" />
-                            <span>Bort</span>
+                            <span>Isa (IV)</span>
                           </div>
                         )}
                       </div>
@@ -134,7 +129,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
                   )}
 
                   {/* Home Meds Card */}
-                  {hasHomeMeds && (
+                  {hasHomeMeds && !isRestDay && (
                     <div className="bg-amber-50 border border-amber-200 rounded-md p-1 group-hover:border-amber-300 transition-colors">
                       <div className="flex items-center gap-1 text-[9px] font-extrabold text-amber-800 uppercase tracking-tight mb-0.5">
                           <div className="bg-amber-100 p-0.5 rounded-sm">
@@ -144,8 +139,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ schedule, onDayClick, curre
                       </div>
                       <div className="flex items-center gap-1 pl-0.5 mt-0.5">
                           <Pill className="w-3 h-3 text-amber-500" />
-                          <span className="text-[9px] font-medium text-amber-900">Meds</span>
+                          <span className="text-[9px] font-medium text-amber-900">Pom</span>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Rest Day indicator */}
+                  {isRestDay && !hasClinicVisit && (
+                    <div className="bg-slate-100 border border-slate-200 rounded-md p-1 text-center">
+                      <span className="text-[9px] font-medium text-slate-500">Rest Day</span>
                     </div>
                   )}
                 </div>

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'D-VTD Scheduler',
-  description: 'Clinical scheduling tool for Daratumumab, Bortezomib, Thalidomide, and Dexamethasone regimen.',
+  title: 'IsaPomDex Scheduler',
+  description: 'Clinical scheduling tool for Isatuximab, Pomalidomide, and Dexamethasone regimen for relapsed/refractory multiple myeloma.',
 }
 
 export default function RootLayout({

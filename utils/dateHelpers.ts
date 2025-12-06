@@ -43,7 +43,7 @@ export const getStartOfWeek = (date: Date): Date => {
 
 export const getDaysInMonth = (date: Date): Date[] => {
   if (isNaN(date.getTime())) return [];
-  
+
   const year = date.getFullYear();
   const month = date.getMonth();
   const days = [];
@@ -53,7 +53,7 @@ export const getDaysInMonth = (date: Date): Date[] => {
   // Pad start to Monday
   let current = new Date(firstDay);
   // getDay(): Su=0, Mo=1, Tu=2... We want to iterate back until we hit Monday (1).
-  while (current.getDay() !== 1) { 
+  while (current.getDay() !== 1) {
     current.setDate(current.getDate() - 1);
   }
   const startDate = new Date(current);
@@ -61,7 +61,7 @@ export const getDaysInMonth = (date: Date): Date[] => {
   // Pad end to Sunday
   current = new Date(lastDay);
   // We want to iterate forward until we hit Sunday (0).
-  while (current.getDay() !== 0) { 
+  while (current.getDay() !== 0) {
     current.setDate(current.getDate() + 1);
   }
   const endDate = new Date(current);

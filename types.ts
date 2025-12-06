@@ -1,6 +1,5 @@
 export enum Phase {
-  Induction = 'Induction',
-  Consolidation = 'Consolidation'
+  Treatment = 'Treatment'
 }
 
 export interface DrugEntry {
@@ -18,10 +17,9 @@ export interface ScheduledDay {
   dayOfCycle: number;
   phase: Phase;
   drugs: DrugEntry[];
-  hasClinicVisit: boolean; // True if Daratumumab or Bortezomib is given
+  hasClinicVisit: boolean; // True if Isatuximab is given (requires IV infusion)
 }
 
 export interface ProtocolConfig {
-  inductionCycles: number;
   cycleLength: number;
 }

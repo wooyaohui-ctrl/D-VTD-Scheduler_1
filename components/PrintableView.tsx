@@ -11,12 +11,12 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
 
   const firstDay = schedule[0];
   const lastDay = schedule[schedule.length - 1];
-  
+
   // Calculate Grid
   // We want to show a calendar view starting from the Monday of the first week
   // spanning to the Sunday of the last week.
   const startOfGrid = getStartOfWeek(firstDay.date);
-  
+
   // Calculate end of grid (next Sunday after last day)
   const lastDate = new Date(lastDay.date);
   const endDow = lastDate.getDay(); // 0 is Sunday
@@ -66,17 +66,19 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
               const dayData = getDayData(date);
               const isToday = dayData !== undefined;
               const hasClinic = dayData?.hasClinicVisit;
-              const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone');
-              
+              const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone' && !d.isPreMed);
+              const hasPom = dayData?.drugs.some(d => d.name === 'Pomalidomide');
+              const isRestDay = dayData && dayData.dayOfCycle >= 22 && !dayData.hasClinicVisit;
+
               // Extract specific clinic drugs for display
               const clinicMeds = dayData?.drugs
-                .filter(d => ['Daratumumab', 'Bortezomib'].includes(d.name))
-                .map(d => d.name === 'Daratumumab' ? 'Dara' : 'Bort')
+                .filter(d => d.name === 'Isatuximab')
+                .map(d => 'Isa')
                 .join(' + ');
 
               return (
                 <div key={dIdx} className={`min-h-[90px] p-1 border-r border-slate-300 last:border-r-0 flex flex-col relative ${!isToday ? 'bg-slate-50' : 'bg-white'}`}>
-                  
+
                   {/* Date Header */}
                   <div className="flex justify-between items-start mb-1">
                     <span className={`font-bold ${!isToday ? 'text-slate-400' : 'text-slate-900'}`}>
@@ -92,7 +94,7 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                   {/* Cell Content */}
                   {dayData ? (
                     <div className="flex-1 flex flex-col gap-1">
-                      
+
                       {/* Clinic Visit Block */}
                       {hasClinic && (
                         <div className="bg-blue-100 border border-blue-300 rounded p-1 text-center mb-1">
@@ -109,10 +111,15 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                             <span className="truncate font-medium text-slate-800">Dexamethasone</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-1 text-[9px]">
-                           <span className="font-bold bg-slate-100 text-slate-600 px-1 rounded text-[8px] border border-slate-200">PM</span>
-                           <span className="truncate text-slate-600">Thalidomide</span>
-                        </div>
+                        {hasPom && (
+                          <div className="flex items-center gap-1 text-[9px]">
+                            <span className="font-bold bg-purple-100 text-purple-600 px-1 rounded text-[8px] border border-purple-200">PM</span>
+                            <span className="truncate text-slate-600">Pomalidomide</span>
+                          </div>
+                        )}
+                        {isRestDay && !hasClinic && (
+                          <div className="text-[9px] text-slate-400 italic text-center">Rest</div>
+                        )}
                       </div>
                     </div>
                   ) : (

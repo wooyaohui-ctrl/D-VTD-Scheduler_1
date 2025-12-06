@@ -3,14 +3,15 @@ import { addDays, formatDate } from './dateHelpers';
 
 export const generateSchedule = (startDate: Date, cycleNumber: number): ScheduledDay[] => {
   const schedule: ScheduledDay[] = [];
-  
+
   // Protocol Definitions
-  // Induction: Cycles 1-4
-  // Consolidation: Cycles 5-6
+  // IsaPomDex: Isatuximab + Pomalidomide + Dexamethasone
+  // For relapsed/refractory multiple myeloma
   // Cycle Length: 28 Days
-  
-  const phase = cycleNumber <= 4 ? Phase.Induction : Phase.Consolidation;
-  
+  // Treatment continues until disease progression
+
+  const phase = Phase.Treatment;
+
   // We only generate 1 cycle now, starting at startDate
   const cycleStartDate = startDate;
 
@@ -19,72 +20,61 @@ export const generateSchedule = (startDate: Date, cycleNumber: number): Schedule
     const drugs: DrugEntry[] = [];
     let hasClinicVisit = false;
 
-    // --- D-VTD LOGIC ---
+    // --- IsaPomDex LOGIC ---
 
-    // 1. Thalidomide (Daily)
-    drugs.push({
-      name: 'Thalidomide',
-      dose: '50mg',
-      route: 'PO',
-      notes: 'Take at night (nocte). Warning: Teratogenic.'
-    });
+    // 1. Pomalidomide (Days 1-21)
+    // 4mg orally once daily, days 1-21, then 7 days off (days 22-28)
+    if (day <= 21) {
+      drugs.push({
+        name: 'Pomalidomide',
+        dose: '4mg',
+        route: 'PO',
+        notes: 'Take at the same time each day. Warning: Teratogenic - requires PPP compliance.'
+      });
+    }
 
-    // 2. Daratumumab
-    // Cycles 1-2: Days 1, 8, 15, 22 (Weekly)
-    // Cycles 3-6: Days 1, 15 (Bi-weekly)
-    const isDaraDay = cycleNumber <= 2 
+    // 2. Isatuximab
+    // Cycle 1: Days 1, 8, 15, 22 (Weekly)
+    // Cycle 2+: Days 1, 15 (Bi-weekly)
+    const isIsaDay = cycleNumber === 1
       ? [1, 8, 15, 22].includes(day)
       : [1, 15].includes(day);
 
-    if (isDaraDay) {
+    if (isIsaDay) {
       drugs.push({
-        name: 'Daratumumab',
-        dose: '1800mg',
-        route: 'SC',
-        notes: 'Subcutaneous injection. Monitor for IRR.'
+        name: 'Isatuximab',
+        dose: '10 mg/kg',
+        route: 'IV',
+        notes: 'IV infusion. Monitor for infusion-related reactions.'
       });
       hasClinicVisit = true;
 
-      // Dara Pre-meds
-      drugs.push({ name: 'Paracetamol', dose: '1g', route: 'PO', isPreMed: true, notes: '1 hour prior to Dara' });
-      drugs.push({ name: 'Chlorphenamine', dose: '4mg', route: 'PO', isPreMed: true, notes: '1 hour prior to Dara' });
-      
-      // Cycle 1 Day 1 Special Pre-med
-      if (cycleNumber === 1 && day === 1) {
-        drugs.push({ name: 'Montelukast', dose: '10mg', route: 'PO', isPreMed: true, notes: 'Cycle 1 only' });
-      }
-    }
+      // Isatuximab Pre-meds (given before each infusion)
+      drugs.push({ name: 'Paracetamol', dose: '650-1000mg', route: 'PO', isPreMed: true, notes: '15-60 min prior to Isa' });
+      drugs.push({ name: 'Diphenhydramine', dose: '25-50mg', route: 'IV', isPreMed: true, notes: '15-60 min prior to Isa (or equivalent H1 blocker)' });
+      drugs.push({ name: 'Ranitidine', dose: '50mg', route: 'IV', isPreMed: true, notes: '15-60 min prior to Isa (or equivalent H2 blocker)' });
 
-    // 3. Bortezomib
-    // All Cycles: Days 1, 8, 15, 22
-    if ([1, 8, 15, 22].includes(day)) {
-      drugs.push({
-        name: 'Bortezomib',
-        dose: '1.3 mg/m²',
-        route: 'SC',
-        notes: 'At least 72 hours between doses. Monitor neuropathy.'
-      });
-      hasClinicVisit = true;
-    }
-
-    // 4. Dexamethasone
-    // Days 1, 2, 8, 9, 15, 16, 22, 23
-    if ([1, 2, 8, 9, 15, 16, 22, 23].includes(day)) {
-      // Dose Logic:
-      // Cycles 1-2: 40mg
-      // Cycles 3-6: 20mg
-      const dexDose = cycleNumber <= 2 ? '40mg' : '20mg';
-      
-      let notes = 'Take in the morning with food.';
-      if (isDaraDay) {
-          notes += ' Part of this dose may be given as pre-medication.';
-      }
-
+      // Dexamethasone as pre-med on Isatuximab days (given IV before infusion)
       drugs.push({
         name: 'Dexamethasone',
-        dose: dexDose,
+        dose: '40mg',
+        route: 'IV',
+        isPreMed: true,
+        notes: '30-60 min prior to Isa. Part of pre-medication and weekly Dex dose.'
+      });
+    }
+
+    // 3. Dexamethasone
+    // Days 1, 8, 15, 22 of each cycle
+    // On Isatuximab days: given IV as pre-medication (already added above)
+    // On non-Isatuximab days (only in Cycle 2+): given PO
+    if ([1, 8, 15, 22].includes(day) && !isIsaDay) {
+      // For cycle 2+, days 8 and 22 don't have Isatuximab, so Dex is given orally
+      drugs.push({
+        name: 'Dexamethasone',
+        dose: '40mg',
         route: 'PO',
-        notes: notes
+        notes: 'Take in the morning with food. Reduce to 20mg if age >=75.'
       });
     }
 

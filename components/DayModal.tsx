@@ -20,12 +20,12 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
+        <div className="bg-purple-900 p-4 flex justify-between items-center text-white">
           <div>
             <h3 className="text-xl font-bold">{day.dateString}</h3>
-            <p className="text-slate-300 text-sm">Cycle {day.cycle}, Day {day.dayOfCycle}</p>
+            <p className="text-purple-200 text-sm">Cycle {day.cycle}, Day {day.dayOfCycle}</p>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-700 rounded-full transition-colors">
+          <button onClick={onClose} className="p-1 hover:bg-purple-700 rounded-full transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -36,7 +36,7 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
               <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-blue-800">Clinic Visit Required</p>
-                <p className="text-sm text-blue-700">Patient must attend the Day Unit for administration.</p>
+                <p className="text-sm text-blue-700">Patient must attend the Day Unit for Isatuximab IV infusion.</p>
               </div>
             </div>
           )}
@@ -67,10 +67,10 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
               </div>
             </div>
           ))}
-          
+
            {!day.drugs.length && (
             <div className="text-center py-8 text-slate-400 italic">
-              Rest Day - No scheduled medications from protocol.
+              Rest Day - No scheduled medications (Pomalidomide off days 22-28).
             </div>
           )}
         </div>

@@ -16,13 +16,10 @@ export default function Home() {
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
   });
 
-  const [phase, setPhase] = useState<Phase>(Phase.Induction);
   const [cycleNumber, setCycleNumber] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<ScheduledDay | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dateInputRef = useRef<HTMLInputElement>(null);
-
-  const getCyclesForPhase = (p: Phase) => p === Phase.Induction ? [1, 2, 3, 4] : [5, 6];
 
   // Parse the date string safely for display logic
   const displayDate = useMemo(() => {
@@ -72,11 +69,6 @@ export default function Home() {
     setSelectedDay(day);
   };
 
-  const handlePhaseChange = (newPhase: Phase) => {
-    setPhase(newPhase);
-    setCycleNumber(newPhase === Phase.Induction ? 1 : 5);
-  };
-
   const handlePrint = () => {
     window.print();
   };
@@ -102,12 +94,12 @@ export default function Home() {
           {/* Top Bar */}
           <header className="bg-white border-b border-slate-200 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm z-10 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-600 p-1.5 rounded-lg text-white">
+              <div className="bg-purple-600 p-1.5 rounded-lg text-white">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900 leading-tight">D-VTD Scheduler</h1>
-                <p className="text-[10px] text-slate-500">Myeloma Regimen (NICE TA763)</p>
+                <h1 className="text-lg font-bold text-slate-900 leading-tight">IsaPomDex Scheduler</h1>
+                <p className="text-[10px] text-slate-500">Relapsed/Refractory Myeloma (NICE TA658)</p>
               </div>
             </div>
 
@@ -116,11 +108,11 @@ export default function Home() {
               {/* Date Picker - Improved Overlay Method */}
               <div className="relative group">
                 {/* Visual UI (Ignored by pointer events so clicks pass to input) */}
-                <div className="flex flex-col bg-white border border-slate-300 rounded px-2 py-1 shadow-sm group-hover:border-blue-500 group-hover:ring-1 group-hover:ring-blue-200 transition-all min-w-[140px] pointer-events-none">
+                <div className="flex flex-col bg-white border border-slate-300 rounded px-2 py-1 shadow-sm group-hover:border-purple-500 group-hover:ring-1 group-hover:ring-purple-200 transition-all min-w-[140px] pointer-events-none">
                     <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Start Date</label>
                     <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-slate-900 truncate">{displayDate}</span>
-                        <CalendarDays className="w-4 h-4 text-blue-600 shrink-0" />
+                        <CalendarDays className="w-4 h-4 text-purple-600 shrink-0" />
                     </div>
                 </div>
 
@@ -147,27 +139,6 @@ export default function Home() {
 
               <div className="h-8 w-px bg-slate-300 mx-1 hidden sm:block"></div>
 
-              {/* Phase Selector */}
-              <div className="flex flex-col">
-                <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Phase</label>
-                <div className="flex bg-slate-200 rounded p-0.5">
-                   <button
-                    onClick={() => handlePhaseChange(Phase.Induction)}
-                    className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Induction ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
-                   >
-                     Induction
-                   </button>
-                   <button
-                    onClick={() => handlePhaseChange(Phase.Consolidation)}
-                    className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Consolidation ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
-                   >
-                     Consolidation
-                   </button>
-                </div>
-              </div>
-
-              <div className="h-8 w-px bg-slate-300 mx-1 hidden sm:block"></div>
-
               {/* Cycle Selector */}
               <div className="flex flex-col">
                 <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Cycle</label>
@@ -175,9 +146,9 @@ export default function Home() {
                      <select
                        value={cycleNumber}
                        onChange={(e) => setCycleNumber(Number(e.target.value))}
-                       className="appearance-none w-full bg-slate-50 border border-slate-200 hover:border-blue-400 transition-colors text-slate-700 text-xs font-bold py-1.5 pl-3 pr-8 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
+                       className="appearance-none w-full bg-slate-50 border border-slate-200 hover:border-purple-400 transition-colors text-slate-700 text-xs font-bold py-1.5 pl-3 pr-8 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm cursor-pointer"
                      >
-                       {getCyclesForPhase(phase).map(c => (
+                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(c => (
                          <option key={c} value={c}>Cycle {c}</option>
                        ))}
                      </select>
@@ -219,7 +190,7 @@ export default function Home() {
           <div className="md:hidden absolute bottom-4 right-4 z-30">
             <button
                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-               className="bg-blue-600 text-white p-3 rounded-full shadow-lg"
+               className="bg-purple-600 text-white p-3 rounded-full shadow-lg"
             >
               <Settings className="w-6 h-6" />
             </button>
