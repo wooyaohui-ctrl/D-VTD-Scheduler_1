@@ -152,42 +152,6 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
         ))}
       </div>
 
-      {/* Footer Info */}
-      <div className="grid grid-cols-2 gap-8 border-t-2 border-slate-800 pt-4">
-        
-        {/* Next Appointment */}
-        <div>
-           <div className="border border-slate-400 rounded p-3 bg-slate-50">
-             <h3 className="font-bold text-sm mb-4 uppercase text-slate-700">Next Clinic Appointment</h3>
-             <div className="flex gap-4">
-               <div className="flex-1 border-b border-slate-300 pb-1">
-                 <span className="text-[10px] text-slate-500 uppercase block mb-2">Date</span>
-               </div>
-               <div className="flex-1 border-b border-slate-300 pb-1">
-                 <span className="text-[10px] text-slate-500 uppercase block mb-2">Time</span>
-               </div>
-             </div>
-           </div>
-        </div>
-
-        {/* Safety Warnings */}
-        <div className="text-[10px] space-y-2">
-          <div className="font-bold text-sm uppercase flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-600"></span>
-            Urgent Attention
-          </div>
-          <p>
-            <strong>FEVER:</strong> If your temperature is <strong>38°C</strong> or higher, or you feel unwell with shivers/shakes, you must attend A&E or contact the Triage Line immediately. Do not just take paracetamol.
-          </p>
-          <div className="bg-slate-100 p-2 rounded border border-slate-200">
-             <p className="font-bold">24hr Triage / Emergency Contact:</p>
-             <p className="text-lg">_____________________________</p>
-          </div>
-          <p className="italic text-slate-500 mt-1">
-            * Thalidomide is teratogenic. Store out of reach of children.
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
