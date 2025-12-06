@@ -51,8 +51,8 @@
           display: block !important;
         }
 
-        /* Hide non-print elements - Must be last to override generic resets */
-        .no-print {
+        /* Hide non-print elements - High specificity to override generic resets */
+        html body #root .no-print {
           display: none !important;
         }
       }
@@ -62,16 +62,6 @@
         display: none;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0"
-  }
-}
-</script>
 </head>
   <body class="bg-slate-50 text-slate-900 antialiased">
     <div id="root"></div>

@@ -45,7 +45,7 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
             <div key={category} className="mb-6 last:mb-0">
               <h4 className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-3">{category}</h4>
               <div className="space-y-3">
-                {drugs.map((drug, idx) => (
+                {(drugs as DrugEntry[]).map((drug, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-300 transition-colors bg-white shadow-sm">
                     <div className={`p-2 rounded-full shrink-0 ${drug.route === 'PO' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
                       {drug.route === 'PO' ? <Pill className="w-5 h-5" /> : <Syringe className="w-5 h-5" />}
