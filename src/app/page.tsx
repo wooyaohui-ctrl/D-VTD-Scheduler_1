@@ -1,18 +1,39 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { generateSchedule } from './utils/scheduler';
-import { Phase, ScheduledDay } from './types';
-import CalendarView from './components/CalendarView';
-import ProtocolSidebar from './components/ProtocolSidebar';
-import DayModal from './components/DayModal';
-import PrintableView from './components/PrintableView';
+'use client';
+
+import React, { useState, useMemo, useRef, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import { generateSchedule } from '../utils/scheduler';
+import { Phase, ScheduledDay } from '../types';
+import CalendarView from '../components/CalendarView';
+import ProtocolSidebar from '../components/ProtocolSidebar';
+import DayModal from '../components/DayModal';
 import { Calendar, Printer, Settings, CalendarDays } from 'lucide-react';
+
+// Lazy load PrintableView
+const PrintableView = dynamic(() => import('../components/PrintableView'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function App() {
   // Initialize with today's date in local time to avoid UTC shifts
   const [startDate, setStartDate] = useState<string>(() => {
+    // Check if we are in the browser to access Date
+    if (typeof window === 'undefined') return '';
     const d = new Date();
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
   });
+
+  const [isMounted, setIsMounted] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+    if (!startDate) {
+        const d = new Date();
+        setStartDate(new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0]);
+    }
+  }, []);
   
   const [phase, setPhase] = useState<Phase>(Phase.Induction);
   const [cycleNumber, setCycleNumber] = useState<number>(1);
@@ -76,13 +97,21 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (typeof window !== 'undefined') {
+        setIsPrinting(true);
+    }
   };
+
+  if (!isMounted) return <div className="flex h-screen w-full items-center justify-center bg-slate-50"><div className="text-slate-500">Loading Scheduler...</div></div>;
 
   return (
     <>
       {/* Print View (Only visible when printing) */}
-      <PrintableView schedule={schedule} />
+      {isPrinting && (
+        <Suspense fallback={null}>
+            <PrintableView schedule={schedule} autoPrint={true} />
+        </Suspense>
+      )}
 
       {/* Main Screen Layout (Hidden when printing) */}
       <div className="no-print h-screen w-full flex flex-col md:flex-row overflow-hidden bg-slate-100">

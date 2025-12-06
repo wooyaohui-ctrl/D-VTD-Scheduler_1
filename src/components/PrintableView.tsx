@@ -4,9 +4,16 @@ import { getStartOfWeek, addDays, isSameDay } from '../utils/dateHelpers';
 
 interface PrintableViewProps {
   schedule: ScheduledDay[];
+  autoPrint?: boolean;
 }
 
-const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
+const PrintableView: React.FC<PrintableViewProps> = ({ schedule, autoPrint }) => {
+  React.useEffect(() => {
+    if (autoPrint) {
+      window.print();
+    }
+  }, [autoPrint]);
+
   if (schedule.length === 0) return null;
 
   const firstDay = schedule[0];

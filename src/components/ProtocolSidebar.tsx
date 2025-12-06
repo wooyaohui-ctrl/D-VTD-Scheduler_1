@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, Info, FileText, CheckCircle } from 'lucide-react';
 
-const ProtocolSidebar: React.FC = () => {
+const ProtocolSidebar: React.FC = React.memo(() => {
   return (
     <div className="bg-white border-l border-slate-200 h-full overflow-y-auto w-full md:w-80 flex-shrink-0 p-4 text-sm text-slate-700 shadow-xl z-10">
       <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -65,7 +65,7 @@ const ProtocolSidebar: React.FC = () => {
             <div className="p-2 bg-red-50 rounded border border-red-100">
               <p className="font-semibold text-red-800">Neuropathy (Bortezomib)</p>
               <p>G1 with pain/G2: Reduce to 1.0 mg/m²</p>
-              <p>G2 with pain/G3: Withhold -> 0.7 mg/m²</p>
+              <p>G2 with pain/G3: Withhold &rarr; 0.7 mg/m²</p>
             </div>
             <div className="p-2 bg-blue-50 rounded border border-blue-100">
               <p className="font-semibold text-blue-800">Renal Impairment</p>
@@ -77,6 +77,6 @@ const ProtocolSidebar: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default ProtocolSidebar;
