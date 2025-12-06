@@ -51,8 +51,8 @@
           display: block !important;
         }
 
-        /* Hide non-print elements - Must be last to override generic resets */
-        .no-print {
+        /* Hide non-print elements - High specificity to override generic resets */
+        html body #root .no-print {
           display: none !important;
         }
       }
