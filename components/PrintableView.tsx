@@ -88,66 +88,68 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
 
         {/* Weeks */}
         {weeks.map((week, wIdx) => (
-          <div key={wIdx} className="grid grid-cols-7 border-b border-slate-300 last:border-b-0 break-inside-avoid page-break-inside-avoid">
-            {week.map((date, dIdx) => {
-              const dayData = getDayData(date);
-              const isToday = dayData !== undefined;
-              const hasClinic = dayData?.hasClinicVisit;
-              const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone');
-              
-              // Extract specific clinic drugs for display
-              const clinicMeds = dayData?.drugs
-                .filter(d => ['Daratumumab', 'Bortezomib'].includes(d.name))
-                .map(d => d.name === 'Daratumumab' ? 'Dara' : 'Bort')
-                .join(' + ');
+          <div key={wIdx} className="break-inside-avoid page-break-inside-avoid border-b border-slate-300 last:border-b-0">
+            <div className="grid grid-cols-7">
+              {week.map((date, dIdx) => {
+                const dayData = getDayData(date);
+                const isToday = dayData !== undefined;
+                const hasClinic = dayData?.hasClinicVisit;
+                const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone');
 
-              return (
-                <div key={dIdx} className={`min-h-[90px] p-1 border-r border-slate-300 last:border-r-0 flex flex-col relative ${!isToday ? 'bg-slate-50' : 'bg-white'}`}>
-                  
-                  {/* Date Header */}
-                  <div className="flex justify-between items-start mb-1">
-                    <span className={`font-bold ${!isToday ? 'text-slate-400' : 'text-slate-900'}`}>
-                      {date.getDate()} {date.getDate() === 1 || wIdx === 0 && dIdx === 0 ? date.toLocaleString('default', { month: 'short' }) : ''}
-                    </span>
-                    {dayData && (
-                      <span className="text-[9px] font-mono bg-slate-100 text-slate-600 px-1 rounded">
-                        D{dayData.dayOfCycle}
+                // Extract specific clinic drugs for display
+                const clinicMeds = dayData?.drugs
+                  .filter(d => ['Daratumumab', 'Bortezomib'].includes(d.name))
+                  .map(d => d.name === 'Daratumumab' ? 'Dara' : 'Bort')
+                  .join(' + ');
+
+                return (
+                  <div key={dIdx} className={`min-h-[90px] p-1 border-r border-slate-300 last:border-r-0 flex flex-col relative ${!isToday ? 'bg-slate-50' : 'bg-white'}`}>
+
+                    {/* Date Header */}
+                    <div className="flex justify-between items-start mb-1">
+                      <span className={`font-bold ${!isToday ? 'text-slate-400' : 'text-slate-900'}`}>
+                        {date.getDate()} {date.getDate() === 1 || wIdx === 0 && dIdx === 0 ? date.toLocaleString('default', { month: 'short' }) : ''}
                       </span>
-                    )}
-                  </div>
-
-                  {/* Cell Content */}
-                  {dayData ? (
-                    <div className="flex-1 flex flex-col gap-1">
-                      
-                      {/* Clinic Visit Block */}
-                      {hasClinic && (
-                        <div className="bg-blue-100 border border-blue-300 rounded p-1 text-center mb-1">
-                          <div className="text-[9px] font-bold text-blue-900 uppercase">HOSPITAL</div>
-                          <div className="text-[10px] font-bold text-blue-800 leading-tight">{clinicMeds}</div>
-                        </div>
+                      {dayData && (
+                        <span className="text-[9px] font-mono bg-slate-100 text-slate-600 px-1 rounded">
+                          D{dayData.dayOfCycle}
+                        </span>
                       )}
+                    </div>
 
-                      {/* Home Meds */}
-                      <div className="mt-auto space-y-1">
-                        {hasDex && (
-                          <div className="flex items-center gap-1 text-[9px]">
-                            <span className="font-bold bg-amber-100 text-amber-800 px-1 rounded text-[8px] border border-amber-200">AM</span>
-                            <span className="truncate font-medium text-slate-800">Dexamethasone</span>
+                    {/* Cell Content */}
+                    {dayData ? (
+                      <div className="flex-1 flex flex-col gap-1">
+
+                        {/* Clinic Visit Block */}
+                        {hasClinic && (
+                          <div className="bg-blue-100 border border-blue-300 rounded p-1 text-center mb-1">
+                            <div className="text-[9px] font-bold text-blue-900 uppercase">HOSPITAL</div>
+                            <div className="text-[10px] font-bold text-blue-800 leading-tight">{clinicMeds}</div>
                           </div>
                         )}
-                        <div className="flex items-center gap-1 text-[9px]">
-                           <span className="font-bold bg-slate-100 text-slate-600 px-1 rounded text-[8px] border border-slate-200">PM</span>
-                           <span className="truncate text-slate-600">Thalidomide</span>
+
+                        {/* Home Meds */}
+                        <div className="mt-auto space-y-1">
+                          {hasDex && (
+                            <div className="flex items-center gap-1 text-[9px]">
+                              <span className="font-bold bg-amber-100 text-amber-800 px-1 rounded text-[8px] border border-amber-200">AM</span>
+                              <span className="truncate font-medium text-slate-800">Dexamethasone</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 text-[9px]">
+                             <span className="font-bold bg-slate-100 text-slate-600 px-1 rounded text-[8px] border border-slate-200">PM</span>
+                             <span className="truncate text-slate-600">Thalidomide</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZjFmM2Y1IiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-50"></div>
-                  )}
-                </div>
-              );
-            })}
+                    ) : (
+                      <div className="h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZjFmM2Y1IiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-50"></div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>
