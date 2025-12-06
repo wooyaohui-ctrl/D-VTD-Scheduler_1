@@ -55,6 +55,17 @@
         .no-print {
           display: none !important;
         }
+
+        /* Prevent week rows from breaking across pages */
+        .print-week-row {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+
+        /* Ensure the calendar grid can break between weeks if needed */
+        .print-only > div {
+          break-inside: auto;
+        }
       }
 
       /* Default screen state */
