@@ -1,7 +1,7 @@
-import { ScheduledDay, Phase, DrugEntry } from '../types';
+import { ScheduledDay, Phase, DrugEntry, PauseInterval } from '../types';
 import { addDays, formatDate } from './dateHelpers';
 
-export const generateSchedule = (startDate: Date, cycleNumber: number): ScheduledDay[] => {
+export const generateSchedule = (startDate: Date, cycleNumber: number, pauses: PauseInterval[] = []): ScheduledDay[] => {
   const schedule: ScheduledDay[] = [];
   
   // Protocol Definitions
@@ -11,11 +11,47 @@ export const generateSchedule = (startDate: Date, cycleNumber: number): Schedule
   
   const phase = cycleNumber <= 4 ? Phase.Induction : Phase.Consolidation;
   
-  // We only generate 1 cycle now, starting at startDate
-  const cycleStartDate = startDate;
+  // We generate until we have filled 28 cycle days
+  let currentDate = new Date(startDate);
+  let cycleDayCounter = 1;
+  let safetyLoop = 0;
 
-  for (let day = 1; day <= 28; day++) {
-    const currentDate = addDays(cycleStartDate, day - 1);
+  while (cycleDayCounter <= 28 && safetyLoop < 100) {
+    safetyLoop++;
+
+    // Check if current date is paused
+    // We compare strings YYYY-MM-DD
+    // Note: formatDate returns 'Mon, 1 Jan 2024'.
+    // We need standard YYYY-MM-DD for comparison with PauseInterval
+    // Let's create a local helper or just do simple date comparison.
+    // PauseInterval is YYYY-MM-DD.
+    // To be safe, let's construct YYYY-MM-DD from currentDate
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const dayDate = String(currentDate.getDate()).padStart(2, '0');
+    const currentDateIso = `${year}-${month}-${dayDate}`;
+
+    const isPaused = pauses.some(p => {
+        return currentDateIso >= p.startDate && currentDateIso < p.resumeDate;
+    });
+
+    if (isPaused) {
+        schedule.push({
+            date: new Date(currentDate),
+            dateString: formatDate(currentDate),
+            cycle: cycleNumber,
+            dayOfCycle: 0, // 0 indicates pause/gap
+            phase: phase,
+            drugs: [],
+            hasClinicVisit: false,
+            isPaused: true
+        });
+        // Move to next calendar day, but do NOT increment cycleDayCounter
+        currentDate = addDays(currentDate, 1);
+        continue;
+    }
+
+    const day = cycleDayCounter;
     const drugs: DrugEntry[] = [];
     let hasClinicVisit = false;
 
@@ -90,14 +126,19 @@ export const generateSchedule = (startDate: Date, cycleNumber: number): Schedule
 
     // Add to schedule
     schedule.push({
-      date: currentDate,
+      date: new Date(currentDate),
       dateString: formatDate(currentDate),
       cycle: cycleNumber,
       dayOfCycle: day,
       phase: phase,
       drugs,
-      hasClinicVisit
+      hasClinicVisit,
+      isPaused: false
     });
+
+    // Advance both
+    cycleDayCounter++;
+    currentDate = addDays(currentDate, 1);
   }
 
   return schedule;

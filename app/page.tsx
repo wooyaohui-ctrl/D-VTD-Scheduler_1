@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import { generateSchedule } from '../utils/scheduler';
-import { Phase, ScheduledDay } from '../types';
+import { Phase, ScheduledDay, PauseInterval } from '../types';
 import CalendarView from '../components/CalendarView';
 import ProtocolSidebar from '../components/ProtocolSidebar';
 import DayModal from '../components/DayModal';
@@ -18,6 +18,7 @@ export default function Home() {
 
   const [phase, setPhase] = useState<Phase>(Phase.Induction);
   const [cycleNumber, setCycleNumber] = useState<number>(1);
+  const [pauses, setPauses] = useState<PauseInterval[]>([]);
   const [selectedDay, setSelectedDay] = useState<ScheduledDay | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -54,11 +55,11 @@ export default function Home() {
 
       if (isNaN(start.getTime())) return [];
 
-      return generateSchedule(start, cycleNumber);
+      return generateSchedule(start, cycleNumber, pauses);
     } catch (e) {
       return [];
     }
-  }, [startDate, cycleNumber]);
+  }, [startDate, cycleNumber, pauses]);
 
   // Calendar view reference date
   const calendarDate = useMemo(() => {
@@ -79,6 +80,23 @@ export default function Home() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleAddPause = (resumeDate: string) => {
+    if (!selectedDay) return;
+
+    // Normalize dates to YYYY-MM-DD
+    const pauseStart = selectedDay.date.toISOString().split('T')[0]; // Using ISO string for simplicity but watch out for TZ
+
+    // Better way to get YYYY-MM-DD from selectedDay.date which is a Date object
+    const year = selectedDay.date.getFullYear();
+    const month = String(selectedDay.date.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDay.date.getDate()).padStart(2, '0');
+    const pauseStartStr = `${year}-${month}-${day}`;
+
+    // Add new pause
+    setPauses(prev => [...prev, { startDate: pauseStartStr, resumeDate }]);
+    setSelectedDay(null); // Close modal
   };
 
   return (
@@ -243,6 +261,7 @@ export default function Home() {
         <DayModal
           day={selectedDay}
           onClose={() => setSelectedDay(null)}
+          onPause={handleAddPause}
         />
       </div>
     </>
