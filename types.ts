@@ -19,9 +19,15 @@ export interface ScheduledDay {
   phase: Phase;
   drugs: DrugEntry[];
   hasClinicVisit: boolean; // True if Daratumumab or Bortezomib is given
+  isPaused?: boolean;
 }
 
 export interface ProtocolConfig {
   inductionCycles: number;
   cycleLength: number;
+}
+
+export interface PauseInterval {
+  startDate: string; // YYYY-MM-DD
+  resumeDate: string; // YYYY-MM-DD
 }

@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScheduledDay, DrugEntry } from '../types';
-import { X, Pill, Syringe, AlertCircle } from 'lucide-react';
+import { X, Pill, Syringe, AlertCircle, PauseCircle, Calendar } from 'lucide-react';
 
 interface DayModalProps {
   day: ScheduledDay | null;
   onClose: () => void;
+  onPause?: (resumeDate: string) => void;
 }
 
-const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
+const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
+  const [isPausing, setIsPausing] = useState(false);
+  const [resumeDate, setResumeDate] = useState('');
+
   if (!day) return null;
+
+  // Reset state when day changes
+  if (day && isPausing) {
+     // No op, keep state unless modal closed?
+     // Better handling might be in useEffect or key on component
+  }
 
   const groupedDrugs = day.drugs.reduce((acc, drug) => {
     const key = drug.isPreMed ? 'Pre-medication' : 'Chemotherapy';
@@ -17,13 +27,28 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
     return acc;
   }, {} as Record<string, DrugEntry[]>);
 
+  const handlePauseSubmit = () => {
+    if (onPause && resumeDate) {
+      onPause(resumeDate);
+      setIsPausing(false);
+      setResumeDate('');
+    }
+  };
+
+  // Calculate min date for resume (must be > current day)
+  const minResumeDate = new Date(day.date);
+  minResumeDate.setDate(minResumeDate.getDate() + 1);
+  const minResumeDateString = minResumeDate.toISOString().split('T')[0];
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
           <div>
             <h3 className="text-xl font-bold">{day.dateString}</h3>
-            <p className="text-slate-300 text-sm">Cycle {day.cycle}, Day {day.dayOfCycle}</p>
+            <p className="text-slate-300 text-sm">
+               {day.isPaused ? 'Paused' : `Cycle ${day.cycle}, Day ${day.dayOfCycle}`}
+            </p>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-slate-700 rounded-full transition-colors">
             <X className="w-6 h-6" />
@@ -31,47 +56,109 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose }) => {
         </div>
 
         <div className="p-6 max-h-[70vh] overflow-y-auto">
-          {day.hasClinicVisit && (
-            <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-blue-800">Clinic Visit Required</p>
-                <p className="text-sm text-blue-700">Patient must attend the Day Unit for administration.</p>
-              </div>
-            </div>
-          )}
-
-          {Object.entries(groupedDrugs).sort((a,b) => a[0] === 'Pre-medication' ? -1 : 1).map(([category, drugs]) => (
-            <div key={category} className="mb-6 last:mb-0">
-              <h4 className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-3">{category}</h4>
-              <div className="space-y-3">
-                {drugs.map((drug, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-300 transition-colors bg-white shadow-sm">
-                    <div className={`p-2 rounded-full shrink-0 ${drug.route === 'PO' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
-                      {drug.route === 'PO' ? <Pill className="w-5 h-5" /> : <Syringe className="w-5 h-5" />}
-                    </div>
+          {day.isPaused ? (
+             <div className="text-center py-8">
+               <PauseCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+               <p className="text-lg font-bold text-slate-700">Treatment Paused</p>
+               <p className="text-slate-500">Treatment is paused for this day.</p>
+             </div>
+          ) : (
+            <>
+                {day.hasClinicVisit && (
+                    <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{drug.name}</span>
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-mono rounded">{drug.dose}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                         <span className={`text-[10px] px-1.5 rounded border ${drug.route === 'PO' ? 'border-green-200 text-green-700' : 'border-purple-200 text-purple-700'}`}>
-                           {drug.route}
-                         </span>
-                         {drug.notes && <p className="text-xs text-slate-500">{drug.notes}</p>}
-                      </div>
+                        <p className="font-bold text-blue-800">Clinic Visit Required</p>
+                        <p className="text-sm text-blue-700">Patient must attend the Day Unit for administration.</p>
                     </div>
-                  </div>
+                    </div>
+                )}
+
+                {Object.entries(groupedDrugs).sort((a,b) => a[0] === 'Pre-medication' ? -1 : 1).map(([category, drugs]) => (
+                    <div key={category} className="mb-6 last:mb-0">
+                    <h4 className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-3">{category}</h4>
+                    <div className="space-y-3">
+                        {drugs.map((drug, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-300 transition-colors bg-white shadow-sm">
+                            <div className={`p-2 rounded-full shrink-0 ${drug.route === 'PO' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
+                            {drug.route === 'PO' ? <Pill className="w-5 h-5" /> : <Syringe className="w-5 h-5" />}
+                            </div>
+                            <div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-900">{drug.name}</span>
+                                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-mono rounded">{drug.dose}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-[10px] px-1.5 rounded border ${drug.route === 'PO' ? 'border-green-200 text-green-700' : 'border-purple-200 text-purple-700'}`}>
+                                {drug.route}
+                                </span>
+                                {drug.notes && <p className="text-xs text-slate-500">{drug.notes}</p>}
+                            </div>
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+                    </div>
                 ))}
-              </div>
-            </div>
-          ))}
-          
-           {!day.drugs.length && (
-            <div className="text-center py-8 text-slate-400 italic">
-              Rest Day - No scheduled medications from protocol.
-            </div>
+
+                {!day.drugs.length && (
+                    <div className="text-center py-8 text-slate-400 italic">
+                    Rest Day - No scheduled medications from protocol.
+                    </div>
+                )}
+
+                {/* Pause Section */}
+                {onPause && !isPausing && (
+                     <div className="mt-8 pt-6 border-t border-slate-100">
+                        <button
+                          onClick={() => setIsPausing(true)}
+                          className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                        >
+                           <PauseCircle className="w-4 h-4" />
+                           Pause treatment starting today?
+                        </button>
+                     </div>
+                )}
+
+                {isPausing && (
+                    <div className="mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <h4 className="font-bold text-slate-800 mb-2 text-sm">Pause Treatment</h4>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Resume Date</label>
+                                <div className="relative">
+                                    <input
+                                        type="date"
+                                        min={minResumeDateString}
+                                        value={resumeDate}
+                                        onChange={(e) => setResumeDate(e.target.value)}
+                                        className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-1">
+                                    Treatment will be paused from today until the selected resume date.
+                                </p>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    onClick={() => { setIsPausing(false); setResumeDate(''); }}
+                                    className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handlePauseSubmit}
+                                    disabled={!resumeDate}
+                                    className="px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Confirm Pause
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </>
           )}
         </div>
 
