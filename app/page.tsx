@@ -7,10 +7,19 @@ import CalendarView from '../components/CalendarView';
 import ProtocolSidebar from '../components/ProtocolSidebar';
 import DayModal from '../components/DayModal';
 import PrintableView from '../components/PrintableView';
-import { Calendar, Printer, Settings, CalendarDays } from 'lucide-react';
+import {
+  Calendar,
+  CalendarDays,
+  Clock3,
+  HeartPulse,
+  PauseCircle,
+  Printer,
+  Settings,
+  Share2,
+  StickyNote
+} from 'lucide-react';
 
 export default function Home() {
-  // Initialize with today's date in local time to avoid UTC shifts
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
@@ -20,37 +29,33 @@ export default function Home() {
   const [cycleNumber, setCycleNumber] = useState<number>(1);
   const [pauses, setPauses] = useState<PauseInterval[]>([]);
   const [selectedDay, setSelectedDay] = useState<ScheduledDay | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showProtocol, setShowProtocol] = useState(false);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const getCyclesForPhase = (p: Phase) => p === Phase.Induction ? [1, 2, 3, 4] : [5, 6];
 
-  // Parse the date string safely for display logic
   const displayDate = useMemo(() => {
-     if (!startDate) return 'Select Date';
-     try {
-       const [y, m, d] = startDate.split('-').map(Number);
-       // Create date at local midnight
-       const date = new Date(y, m - 1, d);
-       if (isNaN(date.getTime())) return 'Invalid Date';
-       return new Intl.DateTimeFormat('en-GB', {
-         day: 'numeric',
-         month: 'short',
-         year: 'numeric',
-         weekday: 'short'
-       }).format(date);
-     } catch (e) {
-       return 'Invalid Date';
-     }
+    if (!startDate) return 'Select date';
+    try {
+      const [y, m, d] = startDate.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        weekday: 'short'
+      }).format(date);
+    } catch (e) {
+      return 'Invalid date';
+    }
   }, [startDate]);
 
-  // Generate Schedule with timezone-safe start date
   const schedule = useMemo(() => {
     if (!startDate) return [];
 
     try {
       const [y, m, d] = startDate.split('-').map(Number);
-      // Vital: Use local constructor to prevent timezone off-by-one errors
       const start = new Date(y, m - 1, d);
 
       if (isNaN(start.getTime())) return [];
@@ -61,7 +66,6 @@ export default function Home() {
     }
   }, [startDate, cycleNumber, pauses]);
 
-  // Calendar view reference date
   const calendarDate = useMemo(() => {
     if (!startDate) return new Date();
     const [y, m, d] = startDate.split('-').map(Number);
@@ -82,181 +86,235 @@ export default function Home() {
     window.print();
   };
 
-  const handleAddPause = (resumeDate: string) => {
+  const handleAddPause = (resumeDate: string, resumeDayOfCycle: number) => {
     if (!selectedDay) return;
 
-    // Normalize dates to YYYY-MM-DD
-    const pauseStart = selectedDay.date.toISOString().split('T')[0]; // Using ISO string for simplicity but watch out for TZ
-
-    // Better way to get YYYY-MM-DD from selectedDay.date which is a Date object
     const year = selectedDay.date.getFullYear();
     const month = String(selectedDay.date.getMonth() + 1).padStart(2, '0');
     const day = String(selectedDay.date.getDate()).padStart(2, '0');
     const pauseStartStr = `${year}-${month}-${day}`;
 
-    // Add new pause
-    setPauses(prev => [...prev, { startDate: pauseStartStr, resumeDate }]);
-    setSelectedDay(null); // Close modal
+    setPauses(prev => {
+      const next = [...prev, { startDate: pauseStartStr, resumeDate, resumeDayOfCycle }];
+      return next.sort((a, b) => a.startDate.localeCompare(b.startDate));
+    });
+    setSelectedDay(null);
+  };
+
+  const handleRemovePause = (index: number) => {
+    setPauses(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
     <>
-      {/* Print View (Only visible when printing) */}
       <PrintableView schedule={schedule} />
 
-      {/* Main Screen Layout (Hidden when printing) */}
-      <div className="no-print h-screen w-full flex flex-col md:flex-row overflow-hidden bg-slate-100">
+      <div className="no-print min-h-screen bg-gradient-to-br from-slate-100 via-sky-50 to-white text-slate-900">
+        <div className="max-w-7xl mx-auto px-4 py-6 h-screen flex flex-col gap-4">
 
-        {/* Sidebar (Protocol Info) */}
-        {isSidebarOpen && (
-          <div className="hidden md:block h-full shadow-xl z-20">
-            <ProtocolSidebar />
-          </div>
-        )}
-
-        {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-
-          {/* Top Bar */}
-          <header className="bg-white border-b border-slate-200 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm z-10 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 p-1.5 rounded-lg text-white">
-                <Calendar className="w-5 h-5" />
+          <header className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex gap-3">
+                <div className="p-3 rounded-xl bg-blue-600 text-white shadow-md">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase font-semibold text-blue-700">Hammersmith Hospital · Day Unit</p>
+                  <h1 className="text-2xl font-bold text-slate-900">D-VTD scheduling companion</h1>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Patient-friendly calendar for Daratumumab + Bortezomib + Thalidomide + Dexamethasone. Built for rapid sharing with people on treatment.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-900 leading-tight">D-VTD Scheduler</h1>
-                <p className="text-[10px] text-slate-500">Myeloma Regimen (NICE TA763)</p>
+
+              <div className="flex items-center gap-2 self-start">
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors shadow-sm text-sm"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print / PDF</span>
+                </button>
+                <button
+                  onClick={() => setShowProtocol(!showProtocol)}
+                  className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  title="Show clinician protocol quick view"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-
-              {/* Date Picker - Improved Overlay Method */}
-              <div className="relative group">
-                {/* Visual UI (Ignored by pointer events so clicks pass to input) */}
-                <div className="flex flex-col bg-white border border-slate-300 rounded px-2 py-1 shadow-sm group-hover:border-blue-500 group-hover:ring-1 group-hover:ring-blue-200 transition-all min-w-[140px] pointer-events-none">
-                    <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Start Date</label>
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-slate-900 truncate">{displayDate}</span>
-                        <CalendarDays className="w-4 h-4 text-blue-600 shrink-0" />
-                    </div>
-                </div>
-
-                {/* The Input - Transparent overlay that catches ALL clicks */}
-                <input
-                    ref={dateInputRef}
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    onClick={(e) => {
-                      // Explicitly force picker open on click
-                      try {
-                        if (typeof e.currentTarget.showPicker === 'function') {
-                          e.currentTarget.showPicker();
-                        }
-                      } catch (err) {
-                        // Fallback handling handled by browser default behavior
-                      }
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    aria-label="Select Start Date"
-                />
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50 text-blue-900 border border-blue-100">
+                <Clock3 className="w-4 h-4" />
+                <span>Start: {displayDate}</span>
               </div>
-
-              <div className="h-8 w-px bg-slate-300 mx-1 hidden sm:block"></div>
-
-              {/* Phase Selector */}
-              <div className="flex flex-col">
-                <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Phase</label>
-                <div className="flex bg-slate-200 rounded p-0.5">
-                   <button
-                    onClick={() => handlePhaseChange(Phase.Induction)}
-                    className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Induction ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
-                   >
-                     Induction
-                   </button>
-                   <button
-                    onClick={() => handlePhaseChange(Phase.Consolidation)}
-                    className={`px-2 py-1 text-xs rounded font-medium transition-all ${phase === Phase.Consolidation ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
-                   >
-                     Consolidation
-                   </button>
-                </div>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-100">
+                <HeartPulse className="w-4 h-4" />
+                <span>{phase} · Cycle {cycleNumber}</span>
               </div>
-
-              <div className="h-8 w-px bg-slate-300 mx-1 hidden sm:block"></div>
-
-              {/* Cycle Selector */}
-              <div className="flex flex-col">
-                <label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider mb-0.5">Cycle</label>
-                <div className="relative">
-                     <select
-                       value={cycleNumber}
-                       onChange={(e) => setCycleNumber(Number(e.target.value))}
-                       className="appearance-none w-full bg-slate-50 border border-slate-200 hover:border-blue-400 transition-colors text-slate-700 text-xs font-bold py-1.5 pl-3 pr-8 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
-                     >
-                       {getCyclesForPhase(phase).map(c => (
-                         <option key={c} value={c}>Cycle {c}</option>
-                       ))}
-                     </select>
-                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                       <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                     </div>
-                </div>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-amber-50 text-amber-900 border border-amber-100">
+                <Share2 className="w-4 h-4" />
+                <span>Optimised for patient screenshots</span>
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg md:block hidden border border-slate-200"
-                title="Toggle Protocol Info"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors shadow-sm font-medium text-sm"
-              >
-                <Printer className="w-4 h-4" />
-                <span className="hidden sm:inline">Print</span>
-              </button>
             </div>
           </header>
 
-          {/* Calendar Area */}
-          <div className="flex-1 p-2 overflow-hidden flex flex-col">
-             <CalendarView
-               schedule={schedule}
-               onDayClick={handleDayClick}
-               currentDate={calendarDate}
-             />
-          </div>
-
-          {/* Mobile Sidebar Toggle */}
-          <div className="md:hidden absolute bottom-4 right-4 z-30">
-            <button
-               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-               className="bg-blue-600 text-white p-3 rounded-full shadow-lg"
-            >
-              <Settings className="w-6 h-6" />
-            </button>
-          </div>
-
-           {/* Mobile Sidebar Drawer */}
-           {isSidebarOpen && (
-             <div className="md:hidden fixed inset-0 z-40 flex">
-                <div className="bg-black/50 flex-1" onClick={() => setIsSidebarOpen(false)}></div>
-                <div className="w-80 h-full bg-white shadow-xl overflow-y-auto">
-                   <ProtocolSidebar />
+          <div className="grid lg:grid-cols-[360px,1fr] gap-4 flex-1 min-h-0">
+            <div className="space-y-4 overflow-y-auto pr-1">
+              <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-slate-500">Build the plan</p>
+                    <h2 className="text-lg font-bold text-slate-900">Set the starting point</h2>
+                    <p className="text-sm text-slate-600">Pick the calendar start date and the cycle you are dispensing today.</p>
+                  </div>
+                  <div className="bg-blue-50 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-100">28-day cycle</div>
                 </div>
-             </div>
-           )}
 
-        </main>
+                <div className="grid grid-cols-1 gap-3">
+                  <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+                    <span className="text-xs uppercase tracking-wide text-slate-500">Start date</span>
+                    <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50">
+                      <CalendarDays className="w-5 h-5 text-blue-600" />
+                      <input
+                        ref={dateInputRef}
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="bg-transparent outline-none text-slate-900 flex-1"
+                        aria-label="Select start date"
+                      />
+                    </div>
+                    <span className="text-xs text-slate-500">Local time. This is the day Day 1 medication would be given.</span>
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Phase</p>
+                      <div className="flex rounded-lg bg-slate-100 p-1 gap-1">
+                        <button
+                          onClick={() => handlePhaseChange(Phase.Induction)}
+                          className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition ${phase === Phase.Induction ? 'bg-white shadow border border-slate-200 text-blue-700' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                          Induction
+                        </button>
+                        <button
+                          onClick={() => handlePhaseChange(Phase.Consolidation)}
+                          className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition ${phase === Phase.Consolidation ? 'bg-white shadow border border-slate-200 text-blue-700' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                          Consolidation
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Cycle</p>
+                      <div className="relative">
+                        <select
+                          value={cycleNumber}
+                          onChange={(e) => setCycleNumber(Number(e.target.value))}
+                          className="w-full appearance-none bg-white border border-slate-200 rounded-md px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {getCyclesForPhase(phase).map(c => (
+                            <option key={c} value={c}>Cycle {c}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                          <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">Cycles 1-4 = Induction, 5-6 = Consolidation.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <PauseCircle className="w-5 h-5 text-amber-600" />
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Pause & resume controls</p>
+                    <p className="text-xs text-slate-600">Click any calendar day to pause. Choose the resume date and the cycle day number to continue with.</p>
+                  </div>
+                </div>
+
+                {pauses.length === 0 ? (
+                  <div className="text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-lg p-3">
+                    No pauses added yet. Use the calendar to mark a pause window and select the restart day number that matches the original schedule.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {pauses.map((pause, idx) => (
+                      <div key={`${pause.startDate}-${idx}`} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+                        <div className="space-y-0.5 text-sm">
+                          <p className="font-semibold text-slate-900">Paused from {pause.startDate}</p>
+                          <p className="text-slate-600 text-xs">Resume on {pause.resumeDate} as Cycle Day {pause.resumeDayOfCycle}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemovePause(idx)}
+                          className="text-xs text-slate-500 hover:text-red-600"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <StickyNote className="w-5 h-5 text-sky-700" />
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Patient-facing notes</p>
+                    <p className="text-xs text-slate-600">Keep language friendly; this block sits beside the calendar for quick screenshots.</p>
+                  </div>
+                </div>
+                <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
+                  <li>Hospital visits are shaded blue. Home tablets are highlighted in amber.</li>
+                  <li>Paused days are clearly labelled and do not advance the cycle day count.</li>
+                  <li>Share by printing to PDF or capturing a screenshot on desktop/mobile.</li>
+                </ul>
+              </section>
+
+              {showProtocol && (
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                  <ProtocolSidebar />
+                </div>
+              )}
+            </div>
+
+            <div className="h-full min-h-0 flex flex-col gap-3">
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-3 sm:p-4 flex flex-col h-full min-h-0">
+                <div className="flex items-start justify-between gap-2 pb-3 border-b border-slate-200">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">Patient calendar</p>
+                    <h2 className="text-xl font-bold text-slate-900">Cycle {cycleNumber} · {phase}</h2>
+                    <p className="text-sm text-slate-600">Tap any day to see the schedule, pause treatment, or resume on a specific cycle day.</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-1 rounded-full border border-blue-100">
+                      <CalendarDays className="w-4 h-4" />
+                      <span>{displayDate}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 min-h-0">
+                  <CalendarView
+                    schedule={schedule}
+                    onDayClick={handleDayClick}
+                    currentDate={calendarDate}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      {/* Modals */}
       <div className="no-print">
         <DayModal
           day={selectedDay}

@@ -5,20 +5,22 @@ import { X, Pill, Syringe, AlertCircle, PauseCircle, Calendar } from 'lucide-rea
 interface DayModalProps {
   day: ScheduledDay | null;
   onClose: () => void;
-  onPause?: (resumeDate: string) => void;
+  onPause?: (resumeDate: string, resumeDayOfCycle: number) => void;
 }
 
 const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
   const [isPausing, setIsPausing] = useState(false);
   const [resumeDate, setResumeDate] = useState('');
+  const [resumeDayOfCycle, setResumeDayOfCycle] = useState<number>(1);
 
   if (!day) return null;
 
-  // Reset state when day changes
-  if (day && isPausing) {
-     // No op, keep state unless modal closed?
-     // Better handling might be in useEffect or key on component
-  }
+  // Reset pause form when a new day is opened
+  React.useEffect(() => {
+    setIsPausing(false);
+    setResumeDate('');
+    setResumeDayOfCycle(Math.min(28, (day?.dayOfCycle || 0) + 1));
+  }, [day]);
 
   const groupedDrugs = day.drugs.reduce((acc, drug) => {
     const key = drug.isPreMed ? 'Pre-medication' : 'Chemotherapy';
@@ -29,7 +31,7 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
 
   const handlePauseSubmit = () => {
     if (onPause && resumeDate) {
-      onPause(resumeDate);
+      onPause(resumeDate, resumeDayOfCycle);
       setIsPausing(false);
       setResumeDate('');
     }
@@ -124,22 +126,40 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
                     <div className="mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
                         <h4 className="font-bold text-slate-800 mb-2 text-sm">Pause Treatment</h4>
                         <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Resume Date</label>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        min={minResumeDateString}
-                                        value={resumeDate}
-                                        onChange={(e) => setResumeDate(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                                </div>
-                                <p className="text-[10px] text-slate-500 mt-1">
-                                    Treatment will be paused from today until the selected resume date.
-                                </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                  <label className="block text-xs font-medium text-slate-500 mb-1">Resume on calendar</label>
+                                  <div className="relative">
+                                      <input
+                                          type="date"
+                                          min={minResumeDateString}
+                                          value={resumeDate}
+                                          onChange={(e) => setResumeDate(e.target.value)}
+                                          className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                      <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 mt-1">
+                                      Treatment will be paused from today until this resume date.
+                                  </p>
+                              </div>
+
+                              <div>
+                                  <label className="block text-xs font-medium text-slate-500 mb-1">Restart as cycle day</label>
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={28}
+                                    value={resumeDayOfCycle}
+                                    onChange={(e) => setResumeDayOfCycle(Math.max(1, Math.min(28, Number(e.target.value))))}
+                                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                  <p className="text-[10px] text-slate-500 mt-1">
+                                    Choose the day number from the original schedule that you want to restart on the chosen date.
+                                  </p>
+                              </div>
                             </div>
+
                             <div className="flex gap-2 justify-end">
                                 <button
                                     onClick={() => { setIsPausing(false); setResumeDate(''); }}

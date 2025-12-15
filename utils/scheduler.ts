@@ -3,6 +3,9 @@ import { addDays, formatDate } from './dateHelpers';
 
 export const generateSchedule = (startDate: Date, cycleNumber: number, pauses: PauseInterval[] = []): ScheduledDay[] => {
   const schedule: ScheduledDay[] = [];
+
+  const sortedPauses = [...pauses].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const resumeLookup = new Map(sortedPauses.map(pause => [pause.resumeDate, pause]));
   
   // Protocol Definitions
   // Induction: Cycles 1-4
@@ -31,7 +34,7 @@ export const generateSchedule = (startDate: Date, cycleNumber: number, pauses: P
     const dayDate = String(currentDate.getDate()).padStart(2, '0');
     const currentDateIso = `${year}-${month}-${dayDate}`;
 
-    const isPaused = pauses.some(p => {
+    const isPaused = sortedPauses.some(p => {
         return currentDateIso >= p.startDate && currentDateIso < p.resumeDate;
     });
 
@@ -49,6 +52,12 @@ export const generateSchedule = (startDate: Date, cycleNumber: number, pauses: P
         // Move to next calendar day, but do NOT increment cycleDayCounter
         currentDate = addDays(currentDate, 1);
         continue;
+    }
+
+    const resumeConfig = resumeLookup.get(currentDateIso);
+    if (resumeConfig) {
+      const safeDay = Math.min(28, Math.max(1, resumeConfig.resumeDayOfCycle || cycleDayCounter));
+      cycleDayCounter = safeDay;
     }
 
     const day = cycleDayCounter;
