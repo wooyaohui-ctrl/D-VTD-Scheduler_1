@@ -20,6 +20,8 @@ export interface ScheduledDay {
   drugs: DrugEntry[];
   hasClinicVisit: boolean; // True if Daratumumab or Bortezomib is given
   isPaused?: boolean;
+  isClinicClosed?: boolean; // True for weekends and public holidays
+  clinicClosedReason?: string; // 'weekend' | 'holiday:Christmas Day' etc.
 }
 
 export interface ProtocolConfig {

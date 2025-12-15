@@ -68,7 +68,9 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
               const hasClinic = dayData?.hasClinicVisit;
               const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone');
               const isPaused = dayData?.isPaused;
-              
+              const isClinicClosed = dayData?.isClinicClosed;
+              const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
               // Extract specific clinic drugs for display
               const clinicMeds = dayData?.drugs
                 .filter(d => ['Daratumumab', 'Bortezomib'].includes(d.name))
@@ -76,8 +78,8 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                 .join(' + ');
 
               return (
-                <div key={dIdx} className={`min-h-[90px] p-1 border-r border-slate-300 last:border-r-0 flex flex-col relative ${!isToday ? 'bg-slate-50' : 'bg-white'}`}>
-                  
+                <div key={dIdx} className={`min-h-[90px] p-1 border-r border-slate-300 last:border-r-0 flex flex-col relative ${!isToday ? 'bg-slate-50' : isWeekend ? 'bg-slate-50/60' : 'bg-white'}`}>
+
                   {/* Date Header */}
                   <div className="flex justify-between items-start mb-1">
                     <span className={`font-bold ${!isToday ? 'text-slate-400' : 'text-slate-900'}`}>
@@ -98,6 +100,13 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                         <div className="flex-1 flex flex-col items-center justify-center text-[10px] font-semibold text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded">
                           <span>PAUSED</span>
                           <span className="font-mono text-[9px]">No treatment</span>
+                        </div>
+                      )}
+
+                      {/* Clinic Closed Notice */}
+                      {!isPaused && isClinicClosed && !hasClinic && (
+                        <div className="text-[8px] text-slate-400 truncate">
+                          {dayData.clinicClosedReason || 'Clinic closed'}
                         </div>
                       )}
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScheduledDay, DrugEntry } from '../types';
-import { X, Pill, Syringe, AlertCircle, PauseCircle, Calendar } from 'lucide-react';
+import { X, Pill, Syringe, AlertCircle, PauseCircle, Calendar, CalendarOff } from 'lucide-react';
 
 interface DayModalProps {
   day: ScheduledDay | null;
@@ -66,6 +66,19 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
              </div>
           ) : (
             <>
+                {day.isClinicClosed && (
+                    <div className="mb-4 bg-slate-50 border-l-4 border-slate-400 p-3 rounded-r-md flex items-start gap-3">
+                    <CalendarOff className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-bold text-slate-700">Day Unit Closed</p>
+                        <p className="text-sm text-slate-600">
+                          {day.clinicClosedReason ? `Closed for ${day.clinicClosedReason}.` : 'The clinic is closed on this day.'}{' '}
+                          Home medications can still be taken as scheduled.
+                        </p>
+                    </div>
+                    </div>
+                )}
+
                 {day.hasClinicVisit && (
                     <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
