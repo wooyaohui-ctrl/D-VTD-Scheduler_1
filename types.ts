@@ -30,4 +30,5 @@ export interface ProtocolConfig {
 export interface PauseInterval {
   startDate: string; // YYYY-MM-DD
   resumeDate: string; // YYYY-MM-DD
+  resumeDayOfCycle: number; // Day of cycle to restart on the resume date
 }

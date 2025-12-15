@@ -67,6 +67,7 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
               const isToday = dayData !== undefined;
               const hasClinic = dayData?.hasClinicVisit;
               const hasDex = dayData?.drugs.some(d => d.name === 'Dexamethasone');
+              const isPaused = dayData?.isPaused;
               
               // Extract specific clinic drugs for display
               const clinicMeds = dayData?.drugs
@@ -82,7 +83,7 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                     <span className={`font-bold ${!isToday ? 'text-slate-400' : 'text-slate-900'}`}>
                       {date.getDate()} {date.getDate() === 1 || wIdx === 0 && dIdx === 0 ? date.toLocaleString('default', { month: 'short' }) : ''}
                     </span>
-                    {dayData && (
+                    {dayData && dayData.dayOfCycle > 0 && !isPaused && (
                       <span className="text-[9px] font-mono bg-slate-100 text-slate-600 px-1 rounded">
                         D{dayData.dayOfCycle}
                       </span>
@@ -92,9 +93,16 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                   {/* Cell Content */}
                   {dayData ? (
                     <div className="flex-1 flex flex-col gap-1">
-                      
+
+                      {isPaused && (
+                        <div className="flex-1 flex flex-col items-center justify-center text-[10px] font-semibold text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded">
+                          <span>PAUSED</span>
+                          <span className="font-mono text-[9px]">No treatment</span>
+                        </div>
+                      )}
+
                       {/* Clinic Visit Block */}
-                      {hasClinic && (
+                      {!isPaused && hasClinic && (
                         <div className="bg-blue-100 border border-blue-300 rounded p-1 text-center mb-1">
                           <div className="text-[9px] font-bold text-blue-900 uppercase">HOSPITAL</div>
                           <div className="text-[10px] font-bold text-blue-800 leading-tight">{clinicMeds}</div>
@@ -102,18 +110,20 @@ const PrintableView: React.FC<PrintableViewProps> = ({ schedule }) => {
                       )}
 
                       {/* Home Meds */}
-                      <div className="mt-auto space-y-1">
-                        {hasDex && (
+                      {!isPaused && (
+                        <div className="mt-auto space-y-1">
+                          {hasDex && (
+                            <div className="flex items-center gap-1 text-[9px]">
+                              <span className="font-bold bg-amber-100 text-amber-800 px-1 rounded text-[8px] border border-amber-200">AM</span>
+                              <span className="truncate font-medium text-slate-800">Dexamethasone</span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 text-[9px]">
-                            <span className="font-bold bg-amber-100 text-amber-800 px-1 rounded text-[8px] border border-amber-200">AM</span>
-                            <span className="truncate font-medium text-slate-800">Dexamethasone</span>
+                             <span className="font-bold bg-slate-100 text-slate-600 px-1 rounded text-[8px] border border-slate-200">PM</span>
+                             <span className="truncate text-slate-600">Thalidomide</span>
                           </div>
-                        )}
-                        <div className="flex items-center gap-1 text-[9px]">
-                           <span className="font-bold bg-slate-100 text-slate-600 px-1 rounded text-[8px] border border-slate-200">PM</span>
-                           <span className="truncate text-slate-600">Thalidomide</span>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ) : (
                     <div className="h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZjFmM2Y1IiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-50"></div>
