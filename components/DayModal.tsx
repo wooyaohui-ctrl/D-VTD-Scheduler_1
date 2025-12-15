@@ -13,14 +13,17 @@ const DayModal: React.FC<DayModalProps> = ({ day, onClose, onPause }) => {
   const [resumeDate, setResumeDate] = useState('');
   const [resumeDayOfCycle, setResumeDayOfCycle] = useState<number>(1);
 
-  if (!day) return null;
-
   // Reset pause form when a new day is opened
+  // Note: useEffect must be called before any early returns to satisfy React's rules of hooks
   React.useEffect(() => {
-    setIsPausing(false);
-    setResumeDate('');
-    setResumeDayOfCycle(Math.min(28, (day?.dayOfCycle || 0) + 1));
+    if (day) {
+      setIsPausing(false);
+      setResumeDate('');
+      setResumeDayOfCycle(Math.min(28, (day.dayOfCycle || 0) + 1));
+    }
   }, [day]);
+
+  if (!day) return null;
 
   const groupedDrugs = day.drugs.reduce((acc, drug) => {
     const key = drug.isPreMed ? 'Pre-medication' : 'Chemotherapy';
